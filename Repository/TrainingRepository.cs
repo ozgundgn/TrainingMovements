@@ -52,12 +52,12 @@ namespace Repository
             using (MySqlConnection conn = new MySqlConnection())
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("Id", id, DbType.Int32, ParameterDirection.Input);
+                parameters.Add("Identifier", id, DbType.Int32, ParameterDirection.Input);
                 conn.ConnectionString = _connectionString;
                 if (conn.State != ConnectionState.Open)
                     conn.Open();
 
-                var results = await conn.QueryAsync<Training, Movement, Training>("GetAllTrainingsWithMovements", (training, movement) =>
+                var results = await conn.QueryAsync<Training, Movement, Training>(procedure, (training, movement) =>
                 {
                     if (!trainingDic.TryGetValue(training.Id, out var currentTraining))
                     {

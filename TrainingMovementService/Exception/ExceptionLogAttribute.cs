@@ -1,21 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
+using Repository;
 using Repository.Abstract;
 
 namespace TrainingMovementService.Exception
 {
     public class ExceptionLogAttribute : ExceptionFilterAttribute
     {
-        private readonly IExceptionLoggingRepository _exceptionLoggingRepository;
-        public ExceptionLogAttribute(IExceptionLoggingRepository exceptionLoggingRepository)
-        {
-            _exceptionLoggingRepository = exceptionLoggingRepository;
-        }
-
         public async override Task OnExceptionAsync(ExceptionContext context)
         {
-            context.HttpContext.Response.ContentType = "application/json";
+            var exceptionRepo = (ExceptionLoggingRepository)context.HttpContext.RequestServices.GetService(typeof(ExceptionLoggingRepository));
 
-            await _exceptionLoggingRepository.AddAsync(new Entities.ExcepitonLog
+            await exceptionRepo.AddAsync(new Entities.ExcepitonLog
             {
                 Message = context.Exception.Message,
             }, "ExceptionLogInsert");

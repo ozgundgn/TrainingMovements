@@ -13,7 +13,11 @@ namespace TrainingMovementService
             // Add services to the container.
             builder.Services.AddSingleton<ITrainingRepository, TrainingRepository>();
             builder.Services.AddSingleton<IMovementRepository, MovementRepository>();
-            builder.Services.AddControllers(opt=>opt.Filters.Add(typeof(ExceptionLogAttribute)));
+            builder.Services.AddSingleton<IExceptionLoggingRepository, ExceptionLoggingRepository>();
+
+
+
+            builder.Services.AddControllers(opt => opt.Filters.Add(typeof(ExceptionLogAttribute)));
 
             var app = builder.Build();
 

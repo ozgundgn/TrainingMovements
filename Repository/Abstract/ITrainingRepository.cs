@@ -12,6 +12,8 @@ namespace Repository.Abstract
     public interface ITrainingRepository : IEntityRepository<Training>
     {
         Task<IEnumerable<Training>> GetAllTrainingsWithMovements();
+        Task<Training> GetTrainingByIdWithMovements(int id, string procedure);
+
 
     }
 }

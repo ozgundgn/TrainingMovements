@@ -37,9 +37,8 @@ namespace TrainingMovementService.Authorization
                                         .Split(':', 2);
                     if (credentials.Length == 2)
                     {
-                        //if (IsAuthorized(context, credentials[0], credentials[1]))
                         //{
-                        //   tablodan yetkili mi kontrolü yapılır
+                        //   tablodan yetkili mi kontrolü yapılabilir
                         //}
                     }
                 }

@@ -11,6 +11,7 @@ namespace TrainingMovementService.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
+
     public class TrainingMovementController : ControllerBase
     {
 
@@ -25,14 +26,9 @@ namespace TrainingMovementService.Controllers
             _logger = logger;
         }
 
-        [HttpGet("getalltraining")]
-        [Authorize]
-        public async Task<IEnumerable<Training>> GetAllTrainigAsync()
-        {
-            return await _trainingRepository.GetAllAsync("GetAllTraining");
-        }
-        [HttpPost("addtraining")]
+        #region Training(Antrenman)
 
+        [HttpPost("addtraining")]
         public async Task<int> AddTraning(Training training)
         {
             return await _trainingRepository.AddAsync(training, "TrainingInsert");
@@ -57,26 +53,47 @@ namespace TrainingMovementService.Controllers
                     entity.TrainingTime = training.TrainingTime;
 
                 entity.UpdatedBy = 1; //ekleyen kullanýcý id si
-                return await _trainingRepository.UpdateAsync(training, "TrainingUpdate");
+
+                return await _trainingRepository.UpdateAsync(entity, "TrainingUpdate");
 
             }
 
             return await Task.FromResult<int>(0);
         }
 
-        [HttpDelete("trainingdelete")]
-        public async Task<int> DeleteAsync(long id)
+        [HttpDelete("deletetraining")]
+        public async Task<int> DeleteAsync(int id)
         {
-            var result = await _movementRepository.DeleteAsync(id, "MovementDelete");
+            var result = await _movementRepository.DeleteAsync(id, "MovementDeleteRelatedTraining");
 
             return await _trainingRepository.DeleteAsync(id, "TrainingDelete");
         }
-        [HttpGet("getalltrainingwithmovements")]
 
+        [HttpGet("getalltraining")]
+        [Authorize]
+        public async Task<IEnumerable<Training>> GetAllTrainigAsync()
+        {
+            return await _trainingRepository.GetAllAsync("GetAllTraining");
+        }
+
+        [HttpGet("gettrainingbyid/{id}")]
+        public async Task<Training> GetTrainingById(int id)
+        {
+            return await _trainingRepository.GetById(id, "GetTrainingById");
+        }
+
+        [HttpGet("gettrainingbyidwithmovements/{id}")]
+        public async Task<Training> GetTrainingByIdWithMovements(int id)
+        {
+            return await _trainingRepository.GetTrainingByIdWithMovements(id, "GetTrainingByIdWithMovements");
+        }
+
+        [HttpGet("getalltrainingwithmovements")]
         public async Task<IEnumerable<Training>> GetAllTrainingsWithMovements()
         {
             return await _trainingRepository.GetAllTrainingsWithMovements();
         }
+
         [HttpGet("getalltrainingwithmovementsbyandfilter")]
         public async Task<IEnumerable<Training>> GetAllTrainingsWithMovementsByAndFilter(Training training)
         {
@@ -98,8 +115,8 @@ namespace TrainingMovementService.Controllers
             }
             return list;
         }
-        [HttpGet("getalltrainingwithmovementsbyorfilter")]
 
+        [HttpGet("getalltrainingwithmovementsbyorfilter")]
         public async Task<IEnumerable<Training>> GetAllTrainingsWithMovementsByOrFilter(Training training)
         {
             var list = await _trainingRepository.GetAllTrainingsWithMovements();
@@ -124,20 +141,69 @@ namespace TrainingMovementService.Controllers
                     result.AddRange(regionList);
                 }
 
+
                 if (!string.IsNullOrEmpty(training.TrainingName))
                 {
                     var regionList = list.Where((t) => t.TrainingName == training.TrainingName).ToList();
                     result.AddRange(regionList);
                 }
             }
-            return result;
+
+            return result.DistinctBy(x => x.Id).ToList();
         }
 
-        [HttpGet("gettrainingbyid/{id}")]
-        public async Task<Training> GetTrainingById(long id)
+        #endregion
+
+        #region Movement(Hareket)
+
+        [HttpPost("addmovement")]
+        //[Authorize]
+        public async Task<int> AddMovement(Movement movement)
         {
-            return await _trainingRepository.GetById(id, "GetTrainingById");
+            return await _movementRepository.AddAsync(movement, "MovementInsert");
         }
+
+        [HttpPut("updatemovement")]
+        public async Task<int> UpdateMovement(Movement movement)
+        {
+            if (movement.Id > 0)
+            {
+                var entity = await _movementRepository.GetById(movement.Id, "GetMovementById");
+                entity.Identifier = movement.Id;
+                if (!string.IsNullOrWhiteSpace(movement.MovementName))
+                    entity.MovementName = movement.MovementName;
+
+                if (movement.TrainingId > 0)
+                    entity.TrainingId = movement.TrainingId;
+
+                entity.UpdatedBy = 1; //güncelleyen kullanýcý id si
+                return await _movementRepository.UpdateAsync(entity, "MovementUpdate");
+
+            }
+
+            return await Task.FromResult<int>(0);
+        }
+
+        [HttpDelete("deletemovement")]
+        public async Task<int> DeleteMovement(int id)
+        {
+            return await _movementRepository.DeleteAsync(id, "MovementDelete");
+        }
+
+        [HttpGet("getallmovement")]
+
+        public async Task<IEnumerable<Movement>> GetAllMovements()
+        {
+            return await _movementRepository.GetAllAsync("GetAllMovement");
+        }
+
+        [HttpGet("getmovementbyid/{id}")]
+        public async Task<Movement> GetMovementById(int id)
+        {
+            return await _movementRepository.GetById(id, "GetMovementById");
+        }
+
+        #endregion
 
     }
 }

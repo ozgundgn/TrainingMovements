@@ -31,16 +31,43 @@ namespace Repository
                 if (conn.State != ConnectionState.Open)
                     conn.Open();
 
-                var results = await conn.QueryAsync<Training, Movement, Training>("GetAllTrainingsWithMovements", (training, movement) => { 
-                    if (!trainingDic.TryGetValue(training.Id,out var currentTraining))
+                var results = await conn.QueryAsync<Training, Movement, Training>("GetAllTrainingsWithMovements", (training, movement) =>
+                {
+                    if (!trainingDic.TryGetValue(training.Id, out var currentTraining))
                     {
                         currentTraining = training;
                         trainingDic.Add(training.Id, currentTraining);
                     }
                     currentTraining.Movements.Add(movement);
                     return currentTraining;
-                 }, commandType: CommandType.StoredProcedure);
-                return results.DistinctBy(t=>t.Id).ToList();
+                }, commandType: CommandType.StoredProcedure);
+                return results.DistinctBy(t => t.Id).ToList();
+            }
+        }
+
+        public async Task<Training> GetTrainingByIdWithMovements(int id, string procedure)
+        {
+            var trainingDic = new Dictionary<long, Training>();
+
+            using (MySqlConnection conn = new MySqlConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("Id", id, DbType.Int32, ParameterDirection.Input);
+                conn.ConnectionString = _connectionString;
+                if (conn.State != ConnectionState.Open)
+                    conn.Open();
+
+                var results = await conn.QueryAsync<Training, Movement, Training>("GetAllTrainingsWithMovements", (training, movement) =>
+                {
+                    if (!trainingDic.TryGetValue(training.Id, out var currentTraining))
+                    {
+                        currentTraining = training;
+                        trainingDic.Add(training.Id, currentTraining);
+                    }
+                    currentTraining.Movements.Add(movement);
+                    return currentTraining;
+                }, parameters, commandType: CommandType.StoredProcedure);
+                return results.DistinctBy(x => x.Id).ToList().First();
             }
         }
     }

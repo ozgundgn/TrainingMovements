@@ -25,7 +25,7 @@ namespace Repository.Dapper
         {
             using (TDbConnection conn = new TDbConnection())
             {
-
+              
                 conn.ConnectionString = _connectionString;
                 if (conn.State != ConnectionState.Open)
                     conn.Open();
@@ -34,29 +34,34 @@ namespace Repository.Dapper
             }
         }
 
-        public async Task<int> DeleteAsync(long id, string procedure)
+        public async Task<int> DeleteAsync(int id, string procedure)
         {
             using (TDbConnection conn = new TDbConnection())
             {
+                var parameters = new DynamicParameters();
+                parameters.Add("Identifier", id,DbType.Int32,ParameterDirection.Input);
+
                 conn.ConnectionString = _connectionString;
                 if (conn.State != ConnectionState.Open)
-                    conn.Open();
+                    conn.Open(); 
 
-                var results = await conn.ExecuteAsync(procedure, new { Id = id }, commandType: CommandType.StoredProcedure);
+                var results = await conn.ExecuteAsync(procedure, parameters, commandType: CommandType.StoredProcedure);
                 return results;
             }
         }
 
-        public async Task<TEntity> GetById(long id, string procedure)
+        public async Task<TEntity> GetById(int id, string procedure)
         {
             using (TDbConnection conn = new TDbConnection())
             {
+                var parameters = new DynamicParameters();
+                parameters.Add("Identifier", id, DbType.Int32, ParameterDirection.Input);
 
                 conn.ConnectionString = _connectionString;
                 if (conn.State != ConnectionState.Open)
                     conn.Open();
 
-                var result = await conn.QueryFirstOrDefaultAsync<TEntity>(procedure, new { Id = id }, commandType: CommandType.StoredProcedure);
+                var result = await conn.QueryFirstOrDefaultAsync<TEntity>(procedure, parameters, commandType: CommandType.StoredProcedure);
                 return result;
             }
         }

@@ -9,7 +9,8 @@ namespace Entities
 {
     public class EntityBase : IEntity
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
+        public int Identifier { get; set; }
         public DateTime CreatedDate { get; set; }
         public int CreatedBy { get; set; }
         public DateTime UpdatedDate { get; set; }

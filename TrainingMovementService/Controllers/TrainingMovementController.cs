@@ -40,6 +40,7 @@ namespace TrainingMovementService.Controllers
             if (training.Id > 0)
             {
                 var entity = await _trainingRepository.GetById(training.Id, "GetTrainingById");
+                entity.Identifier = training.Id;
                 if (!string.IsNullOrWhiteSpace(training.TrainingName))
                     entity.TrainingName = training.TrainingName;
 

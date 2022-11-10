@@ -91,65 +91,21 @@ namespace TrainingMovementService.Controllers
         [HttpGet("getalltrainingwithmovements")]
         public async Task<IEnumerable<Training>> GetAllTrainingsWithMovements()
         {
-            return await _trainingRepository.GetAllTrainingsWithMovements();
+            return await _trainingRepository.GetAllTrainingsWithMovements(new Training());
         }
 
         [HttpGet("getalltrainingwithmovementsbyandfilter")]
         public async Task<IEnumerable<Training>> GetAllTrainingsWithMovementsByAndFilter(Training training)
         {
-            var list = await _trainingRepository.GetAllTrainingsWithMovements();
-
-            if (training != null)
-            {
-                if (training.Difficulty > 0)
-                    list = list.Where(t => t.Difficulty == training.Difficulty).ToList();
-
-                if (training.TrainingTime > 0)
-                    list = list.Where((t) => t.TrainingTime == training.TrainingTime).ToList();
-
-                if (!string.IsNullOrEmpty(training.Region))
-                    list = list.Where((t) => t.Region == training.Region).ToList();
-
-                if (!string.IsNullOrEmpty(training.TrainingName))
-                    list = list.Where((t) => t.TrainingName == training.TrainingName).ToList();
-            }
+            var list = await _trainingRepository.GetAllTrainingsWithMovements(training);
             return list;
         }
 
         [HttpGet("getalltrainingwithmovementsbyorfilter")]
         public async Task<IEnumerable<Training>> GetAllTrainingsWithMovementsByOrFilter(Training training)
         {
-            var list = await _trainingRepository.GetAllTrainingsWithMovements();
-            var result = new List<Training>();
-            if (training != null)
-            {
-                if (training.Difficulty > 0)
-                {
-                    var difficultyList = list.Where(t => t.Difficulty == training.Difficulty).ToList();
-                    result.AddRange(difficultyList);
-                }
-
-                if (training.TrainingTime > 0)
-                {
-                    var trainingTimeList = list.Where((t) => t.TrainingTime == training.TrainingTime).ToList();
-                    result.AddRange(trainingTimeList);
-                }
-
-                if (!string.IsNullOrEmpty(training.Region))
-                {
-                    var regionList = list.Where((t) => t.Region == training.Region).ToList();
-                    result.AddRange(regionList);
-                }
-
-
-                if (!string.IsNullOrEmpty(training.TrainingName))
-                {
-                    var regionList = list.Where((t) => t.TrainingName == training.TrainingName).ToList();
-                    result.AddRange(regionList);
-                }
-            }
-
-            return result.DistinctBy(x => x.Id).ToList();
+            var list = await _trainingRepository.GetAllTrainingsWithMovementsByOrFilter(training);
+            return list.DistinctBy(x => x.Id).ToList();
         }
 
         #endregion

@@ -22,14 +22,21 @@ namespace Repository
             _connectionString = configuration.GetConnectionString("SqlConnection");
         }
 
-        public async Task<IEnumerable<Training>> GetAllTrainingsWithMovements()
+        public async Task<IEnumerable<Training>> GetAllTrainingsWithMovements(Training training)
         {
             var trainingDic = new Dictionary<long, Training>();
             using (MySqlConnection conn = new MySqlConnection())
             {
+                
                 conn.ConnectionString = _connectionString;
                 if (conn.State != ConnectionState.Open)
                     conn.Open();
+
+                var parameters = new DynamicParameters();
+                parameters.Add("TrainingName", training.TrainingName, DbType.String, ParameterDirection.Input);
+                parameters.Add("Difficulty", training.Difficulty, DbType.Int32, ParameterDirection.Input);
+                parameters.Add("Region", training.Region, DbType.String, ParameterDirection.Input);
+                parameters.Add("TrainingTime", training.TrainingTime, DbType.Int32, ParameterDirection.Input);
 
                 var results = await conn.QueryAsync<Training, Movement, Training>("GetAllTrainingsWithMovements", (training, movement) =>
                 {
@@ -40,10 +47,41 @@ namespace Repository
                     }
                     currentTraining.Movements.Add(movement);
                     return currentTraining;
-                }, commandType: CommandType.StoredProcedure);
+                }, parameters,commandType: CommandType.StoredProcedure);
                 return results.DistinctBy(t => t.Id).ToList();
             }
         }
+
+        public async Task<IEnumerable<Training>> GetAllTrainingsWithMovementsByOrFilter(Training training)
+        {
+            var trainingDic = new Dictionary<long, Training>();
+            using (MySqlConnection conn = new MySqlConnection())
+            {
+
+                conn.ConnectionString = _connectionString;
+                if (conn.State != ConnectionState.Open)
+                    conn.Open();
+
+                var parameters = new DynamicParameters();
+                parameters.Add("TrainingName", training.TrainingName, DbType.String, ParameterDirection.Input);
+                parameters.Add("Difficulty", training.Difficulty, DbType.Int32, ParameterDirection.Input);
+                parameters.Add("Region", training.Region, DbType.String, ParameterDirection.Input);
+                parameters.Add("TrainingTime", training.TrainingTime, DbType.Int32, ParameterDirection.Input);
+
+                var results = await conn.QueryAsync<Training, Movement, Training>("GetAllTrainingsWithMovementsByOrFilter", (training, movement) =>
+                {
+                    if (!trainingDic.TryGetValue(training.Id, out var currentTraining))
+                    {
+                        currentTraining = training;
+                        trainingDic.Add(training.Id, currentTraining);
+                    }
+                    currentTraining.Movements.Add(movement);
+                    return currentTraining;
+                }, parameters, commandType: CommandType.StoredProcedure);
+                return results.DistinctBy(t => t.Id).ToList();
+            }
+        }
+        
 
         public async Task<Training> GetTrainingByIdWithMovements(int id, string procedure)
         {

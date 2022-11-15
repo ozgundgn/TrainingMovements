@@ -18,7 +18,8 @@ namespace TrainingMovementService.Authorization
         {
             // skip authorization if action is decorated with [AllowAnonymous] attribute
             var allowAnonymous = context.ActionDescriptor.EndpointMetadata.OfType<AllowAnonymousAttribute>().Any();
-
+            if (allowAnonymous)
+                return;
             try
             {
                 string authHeader = context.HttpContext.Request.Headers["Authorization"];
@@ -28,20 +29,24 @@ namespace TrainingMovementService.Authorization
 
                     // set 'WWW-Authenticate' header to trigger login popup in browsers
                     context.HttpContext.Response.Headers["WWW-Authenticate"] = "Basic realm=\"\", charset=\"UTF-8\"";
-                }
 
-                var authHeaderValue = AuthenticationHeaderValue.Parse(authHeader);
-                if (authHeaderValue.Scheme.Equals(AuthenticationSchemes.Basic.ToString(), StringComparison.OrdinalIgnoreCase))
+                }
+                else
                 {
-                    var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(authHeaderValue.Parameter ?? string.Empty))
-                                        .Split(':', 2);
-                    if (credentials.Length == 2)
+                    var authHeaderValue = AuthenticationHeaderValue.Parse(authHeader);
+                    if (authHeaderValue.Scheme.Equals(AuthenticationSchemes.Basic.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        //{
-                        //   tablodan yetkili mi kontrolü yapılabilir
-                        //}
+                        var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(authHeaderValue.Parameter ?? string.Empty))
+                                            .Split(':', 2);
+                        if (credentials.Length == 2)
+                        {
+                            //{
+                            //   tablodan yetkili mi kontrolü yapılabilir
+                            //}
+                        }
                     }
                 }
+               
             }
             catch (FormatException ex)
             {
